@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Control de Departamento de Sistemas | El Rey</title>
+  <link rel="icon" href="logo_el_rey.png" sizes="512x512">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <!-- PANTALLA DE LOGIN -->
+  <div id="login-screen" class="login-overlay">
+    <div class="login-box">
+      <div class="login-header">
+        <img src="logo_el_rey.png" alt="El Rey Logo" class="login-logo" onerror="this.style.display='none'">
+        <h2>SISTEMAS | EL REY</h2>
+        <p>Control e Indicadores de Gestión</p>
+      </div>
+      <form id="login-form" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label for="login-user">Usuario</label>
+          <input type="text" id="login-user" required placeholder="Ej. admin o sistemas" autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label for="login-pass">Contraseña</label>
+          <input type="password" id="login-pass" required placeholder="••••••••" autocomplete="current-password">
+        </div>
+        <div id="login-error" class="login-error" style="display:none;">
+          Usuario o contraseña incorrectos.
+        </div>
+        <button type="submit" class="btn btn-primary block" style="margin-top: 15px;">Ingresar al Sistema</button>
+      </form>
+      <div class="login-help">
+        <small>Acceso por defecto: <strong>admin</strong> / <strong>admin123</strong></small>
+      </div>
+    </div>
+  </div>
+
+  <!-- APLICACIÓN PRINCIPAL -->
+  <div id="app-container" style="display: none; flex-direction: column; min-height: 100vh;">
+    
+    <header class="main-header">
+      <div class="logo-container">
+        <img src="logo_el_rey.png" alt="El Rey Logo" class="logo" onerror="this.style.display='none'">
+        <div class="header-text">
+          <h1>CONTROL DE DEPARTAMENTO DE SISTEMAS</h1>
+          <p>SISTEMAS | EL REY &bull; Organización &bull; Seguimiento &bull; Resultados</p>
+        </div>
+      </div>
+      <div class="user-status-bar">
+        <span>👤 Usuario: <strong id="current-user-display">-</strong></span>
+        <button class="btn btn-secondary btn-sm" onclick="handleLogout()" title="Cerrar Sesión">Salir ➔</button>
+      </div>
+    </header>
+
+    <div class="app-layout">
+      <aside class="sidebar">
+        <div class="sidebar-title">MENÚ PRINCIPAL</div>
+        <button class="nav-btn active" id="nav-home" onclick="showView('home')">⌂ Inicio</button>
+        <button class="nav-btn" id="nav-activities" onclick="showView('activities')">▤ Actividades</button>
+        <button class="nav-btn" id="nav-compras" onclick="showView('compras')">🛒 Compras Priorizadas</button>
+        <button class="nav-btn" id="nav-corte" onclick="showView('corte')">✂ Corte por Fechas</button>
+        <button class="nav-btn" id="nav-report" onclick="showView('report')">▥ Reportes</button>
+        <button class="nav-btn" id="nav-history" onclick="showView('history')">▦ Historial</button>
+        
+        <div class="sidebar-footer">
+          <h3>EL REY</h3>
+          <p>Control de Sistemas</p>
+        </div>
+      </aside>
+
+      <main class="content-area">
+        <!-- VISTA: INICIO -->
+        <section id="view-home" class="view-section">
+          <div class="section-header">
+            <h2>¡Hola! Panel General del Área de Sistemas.</h2>
+            <div>
+              <button class="btn btn-primary" onclick="openForm()">+ Nueva actividad</button>
+            </div>
+          </div>
+
+          <div class="metrics-grid">
+            <div class="card-metric border-blue clickable" onclick="filterFromCard('Todos')">
+              <span class="metric-icon">▤</span>
+              <div>
+                <span class="metric-title">Total de actividades</span>
+                <h3 id="m-total">0</h3>
+              </div>
+            </div>
+            <div class="card-metric border-yellow clickable" onclick="filterFromCard('Pendiente')">
+              <span class="metric-icon">◷</span>
+              <div>
+                <span class="metric-title">Pendientes</span>
+                <h3 id="m-pending">0</h3>
+              </div>
+            </div>
+            <div class="card-metric border-cyan clickable" onclick="filterFromCard('En proceso')">
+              <span class="metric-icon">⚙</span>
+              <div>
+                <span class="metric-title">En proceso</span>
+                <h3 id="m-process">0</h3>
+              </div>
+            </div>
+            <div class="card-metric border-green clickable" onclick="filterFromCard('Completada')">
+              <span class="metric-icon">✓</span>
+              <div>
+                <span class="metric-title">Completadas</span>
+                <h3 id="m-done">0</h3>
+              </div>
+            </div>
+            <div class="card-metric border-red clickable" onclick="filterFromCard('Vencidas')">
+              <span class="metric-icon">!</span>
+              <div>
+                <span class="metric-title">Vencidas</span>
+                <h3 id="m-late">0</h3>
+              </div>
+            </div>
+          </div>
+
+          <div class="home-grid">
+            <div class="card-panel">
+              <div class="panel-header">
+                <span>▤ ACTIVIDADES RECIENTES</span>
+                <button class="btn btn-secondary btn-sm" onclick="showView('activities')">Ver todas →</button>
+              </div>
+              <div id="recent-list" class="cards-container"></div>
+            </div>
+
+            <div class="card-panel">
+              <div class="panel-header">⚡ ACCESOS RÁPIDOS Y COMPRAS</div>
+              <div class="quick-actions">
+                <button class="btn btn-green block" onclick="showView('report')">▥ Ver Reportes Ejecutivos</button>
+                <button class="btn btn-secondary block" onclick="exportJSON()">⇩ Exportar Backup</button>
+                <button class="btn btn-orange block" onclick="document.getElementById('import-file').click()">⇧ Importar Backup</button>
+                <input type="file" id="import-file" style="display:none" accept=".json" onchange="importJSON(event)">
+              </div>
+              
+              <h4 class="sub-header">ABIERTAS POR SUCURSAL</h4>
+              <div class="chart-box" style="height: 140px; margin-bottom: 12px;">
+                <canvas id="miniChartBranches"></canvas>
+              </div>
+              <div id="branch-summary"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- VISTA: ACTIVIDADES -->
+        <section id="view-activities" class="view-section" style="display:none;">
+          <div class="section-header">
+            <h2>ACTIVIDADES REGISTRADAS</h2>
+            <div>
+              <button class="btn btn-green" onclick="exportJSON()">⇩ Exportar Backup</button>
+              <button class="btn btn-primary" onclick="openForm()">+ Nueva actividad</button>
+            </div>
+          </div>
+
+          <div class="filters-panel">
+            <div style="flex: 1; min-width: 180px;">
+              <label style="font-size: 0.75rem; font-weight: bold; display: block; margin-bottom: 3px;">Buscador General:</label>
+              <input type="text" id="filter-search" placeholder="Folio (#00109), problema..." oninput="renderActivities()" style="width: 100%;">
+            </div>
+
+            <div>
+              <label style="font-size: 0.75rem; font-weight: bold; display: block; margin-bottom: 3px;">Desde:</label>
+              <input type="date" id="filter-start-date" onchange="renderActivities()">
+            </div>
+
+            <div>
+              <label style="font-size: 0.75rem; font-weight: bold; display: block; margin-bottom: 3px;">Hasta:</label>
+              <input type="date" id="filter-end-date" onchange="renderActivities()">
+            </div>
+            
+            <div>
+              <label style="font-size: 0.75rem; font-weight: bold; display: block; margin-bottom: 3px;">Estatus:</label>
+              <div class="custom-dropdown">
+                <button class="dropdown-btn" type="button" onclick="toggleDropdown('dropdown-status')">
+                  <span id="label-status">Todos los estatus</span> ▼
+                </button>
+                <div id="dropdown-status" class="dropdown-content">
+                  <label class="dropdown-option"><input type="checkbox" value="Abiertas" onchange="onFilterCheckboxChange()"> Abiertas (Sin cerrar)</label>
+                  <label class="dropdown-option"><input type="checkbox" value="Vencidas" onchange="onFilterCheckboxChange()"> Vencidas</label>
+                  <hr style="border-color:var(--border); margin:4px 0;">
+                  <label class="dropdown-option"><input type="checkbox" value="Pendiente" onchange="onFilterCheckboxChange()"> Pendiente</label>
+                  <label class="dropdown-option"><input type="checkbox" value="En proceso" onchange="onFilterCheckboxChange()"> En proceso</label>
+                  <label class="dropdown-option"><input type="checkbox" value="En espera" onchange="onFilterCheckboxChange()"> En espera</label>
+                  <label class="dropdown-option"><input type="checkbox" value="Completada" onchange="onFilterCheckboxChange()"> Completada</label>
+                  <label class="dropdown-option"><input type="checkbox" value="Cancelada" onchange="onFilterCheckboxChange()"> Cancelada</label>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label style="font-size: 0.75rem; font-weight: bold; display: block; margin-bottom: 3px;">Sucursal:</label>
+              <div class="custom-dropdown">
+                <button class="dropdown-btn" type="button" onclick="toggleDropdown('dropdown-branch')">
+                  <span id="label-branch">Todas las sucursales</span> ▼
+                </button>
+                <div id="dropdown-branch" class="dropdown-content">
+                  <label class="dropdown-option"><input type="checkbox" value="Alcalde" onchange="onFilterCheckboxChange()"> Alcalde</label>
+                  <label class="dropdown-option"><input type="checkbox" value="Escobedo" onchange="onFilterCheckboxChange()"> Escobedo</label>
+                  <label class="dropdown-option"><input type="checkbox" value="Saucito" onchange="onFilterCheckboxChange()"> Saucito</label>
+                  <label class="dropdown-option"><input type="checkbox" value="Pozos" onchange="onFilterCheckboxChange()"> Pozos</label>
+                  <label class="dropdown-option"><input type="checkbox" value="B. Anaya" onchange="onFilterCheckboxChange()"> B. Anaya</label>
+                  <label class="dropdown-option"><input type="checkbox" value="Corporativo" onchange="onFilterCheckboxChange()"> Corporativo</label>
+                  <label class="dropdown-option"><input type="checkbox" value="CPYD" onchange="onFilterCheckboxChange()"> CPYD</label>
+                </div>
+              </div>
+            </div>
+
+            <button class="btn btn-secondary" onclick="clearFilters()">Limpiar Filtros</button>
+            <span id="activities-count" class="count-badge"></span>
+          </div>
+
+          <div id="activities-list" class="cards-container"></div>
+        </section>
+
+        <!-- VISTA: COMPRAS -->
+        <section id="view-compras" class="view-section" style="display:none;">
+          <div class="section-header">
+            <h2>🛒 GESTIÓN DE COMPRAS Y ADQUISICIONES PRIORIZADAS</h2>
+            <button class="btn btn-purple" onclick="openCompraForm()">+ Nueva Compra / Cotización</button>
+          </div>
+
+          <div class="metrics-grid">
+            <div class="card-metric border-purple">
+              <span class="metric-icon">🛒</span>
+              <div>
+                <span class="metric-title">Total Solicitudes</span>
+                <h3 id="comp-total">0</h3>
+              </div>
+            </div>
+            <div class="card-metric border-red">
+              <span class="metric-icon">🔥</span>
+              <div>
+                <span class="metric-title">Prioridad Alta / Crítica</span>
+                <h3 id="comp-high">0</h3>
+              </div>
+            </div>
+            <div class="card-metric border-cyan">
+              <span class="metric-icon">⚙</span>
+              <div>
+                <span class="metric-title">En Cotización / Proceso</span>
+                <h3 id="comp-process">0</h3>
+              </div>
+            </div>
+            <div class="card-metric border-green">
+              <span class="metric-icon">✓</span>
+              <div>
+                <span class="metric-title">Completadas</span>
+                <h3 id="comp-done">0</h3>
+              </div>
+            </div>
+          </div>
+
+          <div class="filters-panel">
+            <input type="text" id="comp-filter-search" placeholder="Buscar compra, departamento..." oninput="renderCompras()">
+            <select id="comp-filter-status" onchange="renderCompras()">
+              <option value="Todos">Todos los estatus</option>
+              <option value="Pendiente">Pendiente</option>
+              <option value="En proceso">En proceso</option>
+              <option value="Completada">Completada</option>
+              <option value="Rechazada">Rechazada</option>
+              <option value="Cancelada">Cancelada</option>
+            </select>
+            <select id="comp-filter-branch" onchange="renderCompras()">
+              <option value="Todas">Todas las sucursales</option>
+              <option value="Alcalde">Alcalde</option>
+              <option value="Escobedo">Escobedo</option>
+              <option value="Saucito">Saucito</option>
+              <option value="Pozos">Pozos</option>
+              <option value="B. Anaya">B. Anaya</option>
+              <option value="Corporativo">Corporativo</option>
+              <option value="CPYD">CPYD</option>
+            </select>
+            <button class="btn btn-secondary" onclick="renderCompras()">Actualizar</button>
+          </div>
+
+          <div id="compras-list" class="cards-container"></div>
+        </section>
+
+        <!-- VISTA: CORTE POR FECHAS -->
+        <section id="view-corte" class="view-section" style="display:none;">
+          <div class="section-header">
+            <h2>✂ CORTE Y DESGLOSE DE ACTIVIDADES POR PERÍODO</h2>
+            <div>
+              <button class="btn btn-green" onclick="downloadCorteExcel()">📗 Descargar Excel</button>
+              <button class="btn btn-purple" onclick="downloadCortePDF()">📕 Exportar PDF / Imprimir</button>
+            </div>
+          </div>
+
+          <div class="card-panel" style="margin-bottom: 20px;">
+            <div class="form-grid" style="grid-template-columns: 1fr 1fr 1fr auto; align-items: end;">
+              <div class="form-group">
+                <label>Fecha de Inicio</label>
+                <input type="date" id="corte-start-date">
+              </div>
+              <div class="form-group">
+                <label>Fecha de Fin</label>
+                <input type="date" id="corte-end-date">
+              </div>
+              <div class="form-group">
+                <label>Filtrar Sucursal</label>
+                <select id="corte-branch">
+                  <option value="Todas">Todas las sucursales</option>
+                  <option value="Alcalde">Alcalde</option>
+                  <option value="Escobedo">Escobedo</option>
+                  <option value="Saucito">Saucito</option>
+                  <option value="Pozos">Pozos</option>
+                  <option value="B. Anaya">B. Anaya</option>
+                  <option value="Corporativo">Corporativo</option>
+                  <option value="CPYD">CPYD</option>
+                </select>
+              </div>
+              <button class="btn btn-primary" onclick="generateCorte()" style="height: 38px;">🔍 Generar Corte</button>
+            </div>
+          </div>
+
+          <div class="metrics-grid">
+            <div class="card-metric border-blue">
+              <span class="metric-icon">📊</span>
+              <div>
+                <span class="metric-title">Actividades en Período</span>
+                <h3 id="corte-total">0</h3>
+              </div>
+            </div>
+            <div class="card-metric border-green">
+              <span class="metric-icon">✓</span>
+              <div>
+                <span class="metric-title">Completadas en Período</span>
+                <h3 id="corte-completed">0</h3>
+              </div>
+            </div>
+            <div class="card-metric border-cyan">
+              <span class="metric-icon">⏱</span>
+              <div>
+                <span class="metric-title">Promedio de Respuesta</span>
+                <h3 id="corte-avg-days">0 días</h3>
+              </div>
+            </div>
+            <div class="card-metric border-yellow">
+              <span class="metric-icon">🎯</span>
+              <div>
+                <span class="metric-title">% Efectividad Período</span>
+                <h3 id="corte-pct">0%</h3>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-panel" id="corte-print-area">
+            <div class="panel-header">
+              <span id="corte-table-title">REPORTE DE ACTIVIDADES REALIZADAS</span>
+            </div>
+            <div style="overflow-x: auto;">
+              <table class="data-table" id="corte-table">
+                <thead>
+                  <tr>
+                    <th>Folio</th>
+                    <th>Detección</th>
+                    <th>Cierre</th>
+                    <th>Sucursal</th>
+                    <th>Categoría</th>
+                    <th>Equipo / Área</th>
+                    <th>Problema / Trabajo</th>
+                    <th>Solución Aplicada</th>
+                    <th>Estatus</th>
+                  </tr>
+                </thead>
+                <tbody id="corte-table-body">
+                  <tr><td colspan="9" style="text-align:center; padding: 20px;">Selecciona las fechas y haz clic en Generar Corte.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- VISTA: HISTORIAL -->
+        <section id="view-history" class="view-section" style="display:none;">
+          <div class="section-header">
+            <h2>▦ HISTORIAL DE MOVIMIENTOS Y SEGUIMIENTO</h2>
+          </div>
+          <div class="filters-panel">
+            <input type="text" id="history-search" placeholder="Buscar en el historial..." oninput="renderHistory()">
+          </div>
+          <div id="history-list" class="history-container"></div>
+        </section>
+
+        <!-- VISTA: REPORTES -->
+        <section id="view-report" class="view-section" style="display:none;">
+          <div class="section-header">
+            <h2>▥ INDICADORES DE IMPACTO Y RENDIMIENTO - SISTEMAS</h2>
+            <button class="btn btn-secondary" onclick="window.print()">🖨 Imprimir Reporte</button>
+          </div>
+
+          <div class="metrics-grid">
+            <div class="card-metric border-green">
+              <span class="metric-icon">🎯</span>
+              <div>
+                <span class="metric-title">Tasa de Efectividad</span>
+                <h3 id="rep-efficiency">0%</h3>
+              </div>
+            </div>
+            <div class="card-metric border-blue">
+              <span class="metric-icon">⏱</span>
+              <div>
+                <span class="metric-title">Tiempo Prom. Respuesta</span>
+                <h3 id="rep-response-time">0 días</h3>
+              </div>
+            </div>
+            <div class="card-metric border-cyan">
+              <span class="metric-icon">🛡</span>
+              <div>
+                <span class="metric-title">Trabajo Preventivo vs Incidencias</span>
+                <h3 id="rep-preventive-pct">0%</h3>
+              </div>
+            </div>
+            <div class="card-metric border-purple">
+              <span class="metric-icon">⚡</span>
+              <div>
+                <span class="metric-title">Actividades Solucionadas</span>
+                <h3 id="rep-solved">0</h3>
+              </div>
+            </div>
+          </div>
+
+          <div class="charts-grid">
+            <div class="card-panel">
+              <div class="panel-header">Atención y Carga por Sucursal</div>
+              <div class="chart-box"><canvas id="chartBranches"></canvas></div>
+            </div>
+            <div class="card-panel">
+              <div class="panel-header">Estatus General de Solicitudes</div>
+              <div class="chart-box"><canvas id="chartStatus"></canvas></div>
+            </div>
+            <div class="card-panel">
+              <div class="panel-header">Distribución por Categoría de Trabajo</div>
+              <div class="chart-box"><canvas id="chartCategories"></canvas></div>
+            </div>
+            <div class="card-panel">
+              <div class="panel-header">Tipo de Trabajo (Correctivo / Preventivo)</div>
+              <div class="chart-box"><canvas id="chartWorkTypes"></canvas></div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- MODAL ACTIVIDADES -->
+    <div id="form-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="modal-title">NUEVA ACTIVIDAD</h3>
+          <button class="close-btn" onclick="closeForm()">&times;</button>
+        </div>
+        <form id="activity-form" onsubmit="saveActivity(event)">
+          <input type="hidden" id="field-id">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Origen *</label>
+              <select id="field-origin" required>
+                <option value="No programada">No programada</option>
+                <option value="Programada">Programada</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Categoría *</label>
+              <select id="field-category" required>
+                <option value="Incidente">Incidente</option>
+                <option value="Solicitud">Solicitud</option>
+                <option value="Mejora">Mejora</option>
+                <option value="Proyecto">Proyecto</option>
+                <option value="Mantenimiento">Mantenimiento</option>
+                <option value="Actividad interna">Actividad interna</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Tipo de trabajo *</label>
+              <select id="field-work-type" required>
+                <option value="Correctivo">Correctivo</option>
+                <option value="Preventivo">Preventivo</option>
+                <option value="Evolutivo">Evolutivo</option>
+                <option value="No aplica">No aplica</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Sucursal *</label>
+              <select id="field-branch" required>
+                <option value="Todas">Todas</option>
+                <option value="Alcalde">Alcalde</option>
+                <option value="Escobedo">Escobedo</option>
+                <option value="Saucito">Saucito</option>
+                <option value="Pozos">Pozos</option>
+                <option value="B. Anaya">B. Anaya</option>
+                <option value="Corporativo">Corporativo</option>
+                <option value="CPYD">CPYD</option>
+              </select>
+            </div>
+            <div class="form-group full-width">
+              <label>Área / Equipo *</label>
+              <input type="text" id="field-equipment" required placeholder="Ej: Caja 1, Impresora CPYD, Servidor">
+            </div>
+            <div class="form-group full-width">
+              <label>Problema / Actividad *</label>
+              <textarea id="field-problem" rows="3" required placeholder="Describe la falla o actividad"></textarea>
+            </div>
+            <div class="form-group full-width">
+              <label>Acción realizada / Solución</label>
+              <textarea id="field-action" rows="3" placeholder="Requerido al completar la actividad"></textarea>
+            </div>
+            <div class="form-group">
+              <label>Fecha Detección *</label>
+              <input type="date" id="field-detection-date" required>
+            </div>
+            <div class="form-group">
+              <label>Fecha Compromiso / Cierre</label>
+              <input type="date" id="field-due-date">
+            </div>
+            <div class="form-group">
+              <label>Prioridad *</label>
+              <select id="field-priority" required>
+                <option value="Media">Media</option>
+                <option value="Alta">Alta</option>
+                <option value="Crítica">Crítica</option>
+                <option value="Baja">Baja</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Estatus *</label>
+              <select id="field-status" onchange="onStatusChange(this.value)" required>
+                <option value="Pendiente">Pendiente</option>
+                <option value="En proceso">En proceso</option>
+                <option value="En espera">En espera</option>
+                <option value="Completada">Completada</option>
+                <option value="Cancelada">Cancelada</option>
+              </select>
+            </div>
+            <div class="form-group full-width">
+              <label>Avance (%): <span id="progress-val">0%</span></label>
+              <input type="range" id="field-progress" min="0" max="100" step="10" value="0" oninput="document.getElementById('progress-val').innerText = this.value + '%'">
+            </div>
+          </div>
+
+          <div id="log-entry-section" class="form-group full-width" style="display:none; margin-top: 15px; border-top: 1px solid #ccc; padding-top: 10px;">
+            <label>Nota de Avance / Comentario de Seguimiento</label>
+            <input type="text" id="field-log-note" placeholder="Escribe qué actualización o revisión realizaste...">
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeForm()">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Guardar Registro</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- MODAL COMPRAS -->
+    <div id="compra-modal" class="modal">
+      <div class="modal-content" style="max-width: 900px;">
+        <div class="modal-header">
+          <h3 id="compra-modal-title">NUEVA COMPRA PRIORIZADA</h3>
+          <button class="close-btn" onclick="closeCompraForm()">&times;</button>
+        </div>
+        <form id="compra-form" onsubmit="saveCompra(event)">
+          <input type="hidden" id="comp-id">
+          
+          <div class="form-grid">
+            <div class="form-group full-width">
+              <label>Nombre de la Compra / Artículo / Servicio *</label>
+              <input type="text" id="comp-title" required placeholder="Ej: Disco Duro SSD 1TB Servidor">
+            </div>
+            <div class="form-group">
+              <label>Prioridad *</label>
+              <select id="comp-priority" required>
+                <option value="Alta">Alta</option>
+                <option value="Crítica">Crítica</option>
+                <option value="Media">Media</option>
+                <option value="Baja">Baja</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Sucursal *</label>
+              <select id="comp-branch" required>
+                <option value="Todas">Todas</option>
+                <option value="Alcalde">Alcalde</option>
+                <option value="Escobedo">Escobedo</option>
+                <option value="Saucito">Saucito</option>
+                <option value="Pozos">Pozos</option>
+                <option value="B. Anaya">B. Anaya</option>
+                <option value="Corporativo">Corporativo</option>
+                <option value="CPYD">CPYD</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Departamento *</label>
+              <input type="text" id="comp-dept" required placeholder="Ej: Sistemas, Cajas">
+            </div>
+            <div class="form-group">
+              <label>Estatus de la Compra *</label>
+              <select id="comp-status" required>
+                <option value="Pendiente">Pendiente</option>
+                <option value="En proceso">En proceso</option>
+                <option value="Completada">Completada</option>
+                <option value="Rechazada">Rechazada</option>
+                <option value="Cancelada">Cancelada</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Fecha Requerida / Límite</label>
+              <input type="date" id="comp-date">
+            </div>
+            <div class="form-group">
+              <label>Opción Seleccionada / Autorizada</label>
+              <select id="comp-selected-option">
+                <option value="Ninguna">En Evaluación / Ninguna</option>
+                <option value="Opción 1">Opción 1</option>
+                <option value="Opción 2">Opción 2</option>
+                <option value="Opción 3">Opción 3</option>
+              </select>
+            </div>
+            <div class="form-group full-width">
+              <label>Justificación / Notas</label>
+              <textarea id="comp-notes" rows="2" placeholder="Motivo o necesidad de la compra"></textarea>
+            </div>
+          </div>
+
+          <h4 style="margin: 20px 0 10px 0; color: var(--navy); border-bottom: 2px solid var(--border); padding-bottom: 5px;">
+            📊 COMPARATIVA DE PROVEEDORES, LINKS Y ARCHIVOS PDF (HASTA 3 OPCIONES)
+          </h4>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+            <!-- Opción 1 -->
+            <div style="background: var(--soft); padding: 10px; border-radius: 8px; border: 1px solid var(--border);">
+              <h5 style="color: var(--blue); margin-bottom: 8px;">Opción / Cotización 1</h5>
+              <div class="form-group" style="margin-bottom: 6px;">
+                <label>Proveedor</label>
+                <input type="text" id="comp-p1-name" placeholder="Ej: Cyberpuerta">
+              </div>
+              <div class="form-group" style="margin-bottom: 6px;">
+                <label>Precio ($)</label>
+                <input type="number" step="0.01" id="comp-p1-price" placeholder="0.00">
+              </div>
+              <div class="form-group" style="margin-bottom: 6px;">
+                <label>Tiempo Entrega</label>
+                <input type="text" id="comp-p1-time" placeholder="Ej: 2 a 3 días">
+              </div>
+              <div class="form-group" style="margin-bottom: 6px;">
+                <label>Link Web / URL</label>
+                <input type="url" id="comp-p1-url" placeholder="https://...">
+              </div>
+              <div class="form-group" style="margin-bottom: 6px;">
+                <label>Adjuntar PDF Cotización</label>
+                <input type="file" id="comp-p1-pdf" accept=".pdf" style="font-size: 0.75rem;">
+                <input type="hidden" id="comp-p1-pdf-data">
+                <span id="comp-p1-pdf-status" style="font-size:0.75rem; color:var(--green);"></span>
+              </div>
+              <div class="form-group">
+                <label>Notas / Garantía</label>
+                <input type="text" id="comp-p1-notes" placeholder="Incluye envío...">
+              </div>
+            </div>
+
+            <!-- Opción 2 -->
+            <div style="background: var(--soft); padding: 10px; border-radius: 8px; border: 1px solid var(--border);">
+              <h5 style="color: var(--blue); margin-bottom: 8px;">Opción / Cotización 2</h5>
+              <div class="form-group" style="margin-bottom: 6px;">
+                <label>Proveedor</label>
+                <input type="text" id="comp-p2-name" placeholder="Ej: Amazon">
+              </div>
+              <div class="form-group" style="margin-bottom: 6px;">
+                <label>Precio ($)</label>
+                <input type="number" step="0.01" id="comp-p2-price" placeholder="0.00">
+              </div>
+              <div class="form-group" style="margin-bottom: 6px;">
+                <label>Tiempo Entrega</label>
+                <input type="text" id="comp-p2-time" placeholder="Ej: Inmediato">
+              </div>
+              <div class="form-group" style="margin-bottom: 6px;">
+                <label>Link Web / URL</label>
+                <input type="url" id="comp-p2-url" placeholder="https://...">
+              </div>
+              <div class="form-group" style="margin-bottom: 6px;">
+                <label>Adjuntar PDF Cotización</label>
+                <input type="file" id="comp-p2-pdf" accept=".pdf" style="font-size: 0.75rem;">
+                <input type="hidden" id="comp-p2-pdf-data">
+                <span id="comp-p2-pdf-status" style="font-size:0.75rem; color:var(--green);"></span>
+              </div>
+              <div class="form-group">
+                <label>Notas / Garantía</label>
+                <input type="text" id="comp-p2-notes" placeholder="Facturado...">
+              </div>
+            </div>
+
+            <!-- Opción 3 -->
+            <div style="background: var(--soft); padding: 10px; border-radius: 8px; border: 1px solid var(--border);">
+              <h5 style="color: var(--blue); margin-bottom: 8px;">Opción / Cotización 3</h5>
+              <div class="form-group" style="margin-bottom: 6px;">
+                <label>Proveedor</label>
+                <input type="text" id="comp-p3-name" placeholder="Ej: Local">
+              </div>
+              <div class="form-group" style="margin-bottom: 6px;">
+                <label>Precio ($)</label>
+                <input type="number" step="0.01" id="comp-p3-price" placeholder="0.00">
+              </div>
+              <div class="form-group" style="margin-bottom: 6px;">
+                <label>Tiempo Entrega</label>
+                <input type="text" id="comp-p3-time" placeholder="Ej: 5 días">
+              </div>
+              <div class="form-group" style="margin-bottom: 6px;">
+                <label>Link Web / URL</label>
+                <input type="url" id="comp-p3-url" placeholder="https://...">
+              </div>
+              <div class="form-group" style="margin-bottom: 6px;">
+                <label>Adjuntar PDF Cotización</label>
+                <input type="file" id="comp-p3-pdf" accept=".pdf" style="font-size: 0.75rem;">
+                <input type="hidden" id="comp-p3-pdf-data">
+                <span id="comp-p3-pdf-status" style="font-size:0.75rem; color:var(--green);"></span>
+              </div>
+              <div class="form-group">
+                <label>Notas / Garantía</label>
+                <input type="text" id="comp-p3-notes" placeholder="1 año garantía...">
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-footer" style="margin-top: 15px;">
+            <button type="button" class="btn btn-secondary" onclick="closeCompraForm()">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Guardar Registro de Compra</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <footer class="main-footer">
+      <span>● Conectado a Servidor MySQL | DB: sistemas</span>
+      <span style="color: var(--yellow);">El Rey | Área de Sistemas</span>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
