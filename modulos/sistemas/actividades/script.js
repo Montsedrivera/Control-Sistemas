@@ -1,0 +1,1 @@
+console.log('⚡ Submódulo de Actividades cargado correctamente.');

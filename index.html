@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal Corporativo | Tortería El Rey</title>
+  <link rel="icon" href="logo_el_rey.png" sizes="512x512">
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+  <!-- 1. PANTALLA DE LOGIN -->
+  <div id="login-screen" class="login-overlay">
+    <div class="login-box">
+      <div class="login-header">
+        <img src="logo_el_rey.png" alt="El Rey Logo" class="login-logo" onerror="this.style.display='none'">
+        <h2>TORTERÍA EL REY</h2>
+        <p>Sistema Integral Corporativo</p>
+      </div>
+      <form id="login-form" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label for="login-user">Usuario</label>
+          <input type="text" id="login-user" required placeholder="Ej. admin o user_sistemas" autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label for="login-pass">Contraseña</label>
+          <input type="password" id="login-pass" required placeholder="••••••••" autocomplete="current-password">
+        </div>
+        <div id="login-error" class="login-error" style="display:none;">
+          Usuario o contraseña incorrectos.
+        </div>
+        <button type="submit" class="btn btn-primary block" style="margin-top: 15px;">Ingresar al Sistema</button>
+      </form>
+      <div class="login-help">
+        <small>Acceso por defecto: <strong>admin</strong> / <strong>admin123</strong></small>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. PANORAMA GENERAL: SELECTOR DE DEPARTAMENTOS EN RECUADROS -->
+  <div id="dept-selector-screen" class="dept-selector-container" style="display: none;">
+    <header class="main-header">
+      <div class="logo-container">
+        <img src="logo_el_rey.png" alt="El Rey Logo" class="logo" onerror="this.style.display='none'">
+        <div class="header-text">
+          <h1>TORTERÍA EL REY &bull; SISTEMA INTEGRAL</h1>
+          <p>Organización &bull; Seguimiento &bull; Resultados</p>
+        </div>
+      </div>
+      <div class="user-status-bar">
+        <span>👤 Usuario: <strong id="selector-user-display">-</strong> (<span id="selector-role-display">-</span>)</span>
+        <button class="btn btn-secondary btn-sm" onclick="handleLogout()">Salir ➔</button>
+      </div>
+    </header>
+
+    <main class="selector-body">
+      <div class="selector-title">
+        <h2>DEPARTAMENTOS DISPONIBLES</h2>
+        <p>Selecciona el módulo al que deseas ingresar según tu perfil de acceso</p>
+      </div>
+
+      <div id="dept-grid" class="dept-grid">
+        <!-- Las 6 tarjetas (Dirección, Administración, Sistemas, Comercialización, Operaciones y DH) se generan dinámicamente con JS -->
+      </div>
+    </main>
+
+    <footer class="main-footer">
+      <span>● Conectado a Servidor MySQL | BD: elrey_core</span>
+      <span style="color: var(--yellow);">Tortería El Rey | Desde 1942</span>
+    </footer>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+
+</html>

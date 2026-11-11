@@ -1,0 +1,172 @@
+<div class="section-header">
+  <h2>ACTIVIDADES REGISTRADAS</h2>
+  <div>
+    <button class="btn btn-green" onclick="exportJSON()">⇩ Exportar Backup</button>
+    <button class="btn btn-primary" onclick="openForm()">+ Nueva actividad</button>
+  </div>
+</div>
+
+<div class="filters-panel">
+  <div style="flex: 1; min-width: 180px;">
+    <label style="font-size: 0.75rem; font-weight: bold; display: block; margin-bottom: 3px;">Buscador General:</label>
+    <input type="text" id="filter-search" placeholder="Folio (#00109), problema..." oninput="renderActivities()" style="width: 100%;">
+  </div>
+
+  <div>
+    <label style="font-size: 0.75rem; font-weight: bold; display: block; margin-bottom: 3px;">Estatus:</label>
+    <div class="custom-dropdown">
+      <button class="dropdown-btn" type="button" onclick="toggleDropdown('dropdown-status')">
+        <span id="label-status">Todos los estatus</span> ▼
+      </button>
+      <div id="dropdown-status" class="dropdown-content">
+        <label class="dropdown-option"><input type="checkbox" value="Abiertas" onchange="onFilterCheckboxChange()"> Abiertas (Sin cerrar)</label>
+        <label class="dropdown-option"><input type="checkbox" value="Vencidas" onchange="onFilterCheckboxChange()"> Vencidas</label>
+        <hr style="border-color:var(--border); margin:4px 0;">
+        <label class="dropdown-option"><input type="checkbox" value="Pendiente" onchange="onFilterCheckboxChange()"> Pendiente</label>
+        <label class="dropdown-option"><input type="checkbox" value="En proceso" onchange="onFilterCheckboxChange()"> En proceso</label>
+        <label class="dropdown-option"><input type="checkbox" value="En espera" onchange="onFilterCheckboxChange()"> En espera</label>
+        <label class="dropdown-option"><input type="checkbox" value="Completada" onchange="onFilterCheckboxChange()"> Completada</label>
+        <label class="dropdown-option"><input type="checkbox" value="Cancelada" onchange="onFilterCheckboxChange()"> Cancelada</label>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <label style="font-size: 0.75rem; font-weight: bold; display: block; margin-bottom: 3px;">Sucursal:</label>
+    <div class="custom-dropdown">
+      <button class="dropdown-btn" type="button" onclick="toggleDropdown('dropdown-branch')">
+        <span id="label-branch">Todas las sucursales</span> ▼
+      </button>
+      <div id="dropdown-branch" class="dropdown-content">
+        <label class="dropdown-option"><input type="checkbox" value="Alcalde" onchange="onFilterCheckboxChange()"> Alcalde</label>
+        <label class="dropdown-option"><input type="checkbox" value="Escobedo" onchange="onFilterCheckboxChange()"> Escobedo</label>
+        <label class="dropdown-option"><input type="checkbox" value="Saucito" onchange="onFilterCheckboxChange()"> Saucito</label>
+        <label class="dropdown-option"><input type="checkbox" value="Pozos" onchange="onFilterCheckboxChange()"> Pozos</label>
+        <label class="dropdown-option"><input type="checkbox" value="B. Anaya" onchange="onFilterCheckboxChange()"> B. Anaya</label>
+        <label class="dropdown-option"><input type="checkbox" value="Corporativo" onchange="onFilterCheckboxChange()"> Corporativo</label>
+        <label class="dropdown-option"><input type="checkbox" value="CPYD" onchange="onFilterCheckboxChange()"> CPYD</label>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <label style="font-size: 0.75rem; font-weight: bold; display: block; margin-bottom: 3px;">Orden:</label>
+    <select id="filter-sort-order" onchange="renderActivities()">
+      <option value="recent">Recientes</option>
+      <option value="oldest">Antiguos</option>
+    </select>
+  </div>
+
+  <button class="btn btn-secondary" onclick="clearFilters()">Limpiar Filtros</button>
+  <span id="activities-count" class="count-badge"></span>
+</div>
+
+<div id="activities-list" class="cards-container"></div>
+
+<!-- MODAL ACTIVIDADES INCLUIDO EN SU PROPIA VISTA -->
+<div id="form-modal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 id="modal-title">NUEVA ACTIVIDAD</h3>
+      <button class="close-btn" onclick="closeForm()">&times;</button>
+    </div>
+    <form id="activity-form" onsubmit="saveActivity(event)">
+      <input type="hidden" id="field-id">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Origen *</label>
+          <select id="field-origin" required>
+            <option value="No programada">No programada</option>
+            <option value="Programada">Programada</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Categoría *</label>
+          <select id="field-category" required>
+            <option value="Incidente">Incidente</option>
+            <option value="Solicitud">Solicitud</option>
+            <option value="Mejora">Mejora</option>
+            <option value="Proyecto">Proyecto</option>
+            <option value="Mantenimiento">Mantenimiento</option>
+            <option value="Actividad interna">Actividad interna</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Tipo de trabajo *</label>
+          <select id="field-work-type" required>
+            <option value="Correctivo">Correctivo</option>
+            <option value="Preventivo">Preventivo</option>
+            <option value="Evolutivo">Evolutivo</option>
+            <option value="No aplica">No aplica</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Sucursal *</label>
+          <select id="field-branch" required>
+            <option value="Todas">Todas</option>
+            <option value="Alcalde">Alcalde</option>
+            <option value="Escobedo">Escobedo</option>
+            <option value="Saucito">Saucito</option>
+            <option value="Pozos">Pozos</option>
+            <option value="B. Anaya">B. Anaya</option>
+            <option value="Corporativo">Corporativo</option>
+            <option value="CPYD">CPYD</option>
+          </select>
+        </div>
+        <div class="form-group full-width">
+          <label>Área / Equipo *</label>
+          <input type="text" id="field-equipment" required placeholder="Ej: Caja 1, Impresora CPYD, Servidor">
+        </div>
+        <div class="form-group full-width">
+          <label>Problema / Actividad *</label>
+          <textarea id="field-problem" rows="3" required placeholder="Describe la falla o actividad"></textarea>
+        </div>
+        <div class="form-group full-width">
+          <label>Acción realizada / Solución</label>
+          <textarea id="field-action" rows="3" placeholder="Requerido al completar la actividad"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Fecha Detección *</label>
+          <input type="date" id="field-detection-date" required>
+        </div>
+        <div class="form-group">
+          <label>Fecha Compromiso / Cierre</label>
+          <input type="date" id="field-due-date">
+        </div>
+        <div class="form-group">
+          <label>Prioridad *</label>
+          <select id="field-priority" required>
+            <option value="Media">Media</option>
+            <option value="Alta">Alta</option>
+            <option value="Crítica">Crítica</option>
+            <option value="Baja">Baja</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Estatus *</label>
+          <select id="field-status" onchange="onStatusChange(this.value)" required>
+            <option value="Pendiente">Pendiente</option>
+            <option value="En proceso">En proceso</option>
+            <option value="En espera">En espera</option>
+            <option value="Completada">Completada</option>
+            <option value="Cancelada">Cancelada</option>
+          </select>
+        </div>
+        <div class="form-group full-width">
+          <label>Avance (%): <span id="progress-val">0%</span></label>
+          <input type="range" id="field-progress" min="0" max="100" step="10" value="0" oninput="document.getElementById('progress-val').innerText = this.value + '%'">
+        </div>
+      </div>
+
+      <div id="log-entry-section" class="form-group full-width" style="display:none; margin-top: 15px; border-top: 1px solid #ccc; padding-top: 10px;">
+        <label>Nota de Avance / Comentario de Seguimiento</label>
+        <input type="text" id="field-log-note" placeholder="Escribe qué actualización o revisión realizaste...">
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeForm()">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Guardar Registro</button>
+      </div>
+    </form>
+  </div>
+</div>

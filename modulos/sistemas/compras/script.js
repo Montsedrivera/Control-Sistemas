@@ -1,0 +1,1 @@
+console.log('🛒 Submódulo de Compras cargado correctamente.');

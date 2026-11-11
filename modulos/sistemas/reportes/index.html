@@ -1,0 +1,54 @@
+<div class="section-header">
+    <h2>▥ INDICADORES DE IMPACTO Y RENDIMIENTO - SISTEMAS</h2>
+    <button class="btn btn-secondary" onclick="window.print()">🖨 Imprimir Reporte</button>
+</div>
+
+<div class="metrics-grid">
+    <div class="card-metric border-green">
+        <span class="metric-icon">🎯</span>
+        <div>
+            <span class="metric-title">Tasa de Efectividad</span>
+            <h3 id="rep-efficiency">0%</h3>
+        </div>
+    </div>
+    <div class="card-metric border-blue">
+        <span class="metric-icon">⏱</span>
+        <div>
+            <span class="metric-title">Tiempo Prom. Respuesta</span>
+            <h3 id="rep-response-time">0 días</h3>
+        </div>
+    </div>
+    <div class="card-metric border-cyan">
+        <span class="metric-icon">🛡</span>
+        <div>
+            <span class="metric-title">Trabajo Preventivo vs Incidencias</span>
+            <h3 id="rep-preventive-pct">0%</h3>
+        </div>
+    </div>
+    <div class="card-metric border-purple">
+        <span class="metric-icon">⚡</span>
+        <div>
+            <span class="metric-title">Actividades Solucionadas</span>
+            <h3 id="rep-solved">0</h3>
+        </div>
+    </div>
+</div>
+
+<div class="charts-grid">
+    <div class="card-panel">
+        <div class="panel-header">Atención y Carga por Sucursal</div>
+        <div class="chart-box"><canvas id="chartBranches"></canvas></div>
+    </div>
+    <div class="card-panel">
+        <div class="panel-header">Estatus General de Solicitudes</div>
+        <div class="chart-box"><canvas id="chartStatus"></canvas></div>
+    </div>
+    <div class="card-panel">
+        <div class="panel-header">Distribución por Categoría de Trabajo</div>
+        <div class="chart-box"><canvas id="chartCategories"></canvas></div>
+    </div>
+    <div class="card-panel">
+        <div class="panel-header">Tipo de Trabajo (Correctivo / Preventivo)</div>
+        <div class="chart-box"><canvas id="chartWorkTypes"></canvas></div>
+    </div>
+</div>

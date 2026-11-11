@@ -1,0 +1,105 @@
+<div class="section-header">
+    <h2>✂ CORTE Y DESGLOSE DE ACTIVIDADES POR PERÍODO</h2>
+    <div>
+        <button class="btn btn-green" onclick="downloadCorteExcel()">📗 Descargar Excel</button>
+        <button class="btn btn-purple" onclick="downloadCortePDF()">📕 Exportar PDF / Imprimir</button>
+    </div>
+</div>
+
+<div class="card-panel" style="margin-bottom: 20px;">
+    <div class="form-grid" style="grid-template-columns: 1fr 1fr 1fr auto; align-items: end;">
+        <div class="form-group">
+            <label>Fecha de Inicio</label>
+            <input type="date" id="corte-start-date">
+        </div>
+        <div class="form-group">
+            <label>Fecha de Fin</label>
+            <input type="date" id="corte-end-date">
+        </div>
+        <div class="form-group">
+            <label style="font-size: 0.85rem; font-weight: bold; color: var(--ink);">Filtrar Sucursal</label>
+            <div class="custom-dropdown" style="width: 100%;">
+                <button class="dropdown-btn" type="button" onclick="toggleDropdown('corte-dropdown-branch')">
+                    <span id="corte-label-branch">Todas las sucursales</span> ▼
+                </button>
+                <div id="corte-dropdown-branch" class="dropdown-content">
+                    <label class="dropdown-option"><input type="checkbox" value="Alcalde"
+                            onchange="updateCorteBranchLabel()"> Alcalde</label>
+                    <label class="dropdown-option"><input type="checkbox" value="Escobedo"
+                            onchange="updateCorteBranchLabel()"> Escobedo</label>
+                    <label class="dropdown-option"><input type="checkbox" value="Saucito"
+                            onchange="updateCorteBranchLabel()"> Saucito</label>
+                    <label class="dropdown-option"><input type="checkbox" value="Pozos"
+                            onchange="updateCorteBranchLabel()"> Pozos</label>
+                    <label class="dropdown-option"><input type="checkbox" value="B. Anaya"
+                            onchange="updateCorteBranchLabel()"> B. Anaya</label>
+                    <label class="dropdown-option"><input type="checkbox" value="Corporativo"
+                            onchange="updateCorteBranchLabel()"> Corporativo</label>
+                    <label class="dropdown-option"><input type="checkbox" value="CPYD"
+                            onchange="updateCorteBranchLabel()"> CPYD</label>
+                </div>
+            </div>
+        </div>
+        <button class="btn btn-primary" onclick="generateCorte()" style="height: 38px;">🔍 Generar Corte</button>
+    </div>
+</div>
+
+<div class="metrics-grid">
+    <div class="card-metric border-blue">
+        <span class="metric-icon">📊</span>
+        <div>
+            <span class="metric-title">Actividades en Período</span>
+            <h3 id="corte-total">0</h3>
+        </div>
+    </div>
+    <div class="card-metric border-green">
+        <span class="metric-icon">✓</span>
+        <div>
+            <span class="metric-title">Completadas en Período</span>
+            <h3 id="corte-completed">0</h3>
+        </div>
+    </div>
+    <div class="card-metric border-cyan">
+        <span class="metric-icon">⏱</span>
+        <div>
+            <span class="metric-title">Promedio de Respuesta</span>
+            <h3 id="corte-avg-days">0 días</h3>
+        </div>
+    </div>
+    <div class="card-metric border-yellow">
+        <span class="metric-icon">🎯</span>
+        <div>
+            <span class="metric-title">% Efectividad Período</span>
+            <h3 id="corte-pct">0%</h3>
+        </div>
+    </div>
+</div>
+
+<div class="card-panel" id="corte-print-area">
+    <div class="panel-header">
+        <span id="corte-table-title">REPORTE DE ACTIVIDADES REALIZADAS</span>
+    </div>
+    <div style="overflow-x: auto;">
+        <table class="data-table" id="corte-table">
+            <thead>
+                <tr>
+                    <th>Folio</th>
+                    <th>Detección</th>
+                    <th>Cierre</th>
+                    <th>Sucursal</th>
+                    <th>Categoría</th>
+                    <th>Equipo / Área</th>
+                    <th>Problema / Trabajo</th>
+                    <th>Solución Aplicada</th>
+                    <th>Estatus</th>
+                </tr>
+            </thead>
+            <tbody id="corte-table-body">
+                <tr>
+                    <td colspan="9" style="text-align:center; padding: 20px;">Selecciona las fechas y haz clic en
+                        Generar Corte.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

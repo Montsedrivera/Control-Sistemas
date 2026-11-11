@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Control de Departamento de Sistemas | El Rey</title>
+  <link rel="icon" href="../../logo_el_rey.png" sizes="512x512">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+  <!-- PANTALLA DE LOGIN -->
+  <div id="login-screen" class="login-overlay">
+    <div class="login-box">
+      <div class="login-header">
+        <img src="../../logo_el_rey.png" alt="El Rey Logo" class="login-logo" onerror="this.style.display='none'">
+        <h2>SISTEMAS | EL REY</h2>
+        <p>Control e Indicadores de Gestión</p>
+      </div>
+      <form id="login-form" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label for="login-user">Usuario</label>
+          <input type="text" id="login-user" required placeholder="Ej. admin o sistemas" autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label for="login-pass">Contraseña</label>
+          <input type="password" id="login-pass" required placeholder="••••••••" autocomplete="current-password">
+        </div>
+        <div id="login-error" class="login-error" style="display:none;">
+          Usuario o contraseña incorrectos.
+        </div>
+        <button type="submit" class="btn btn-primary block" style="margin-top: 15px;">Ingresar al Sistema</button>
+      </form>
+      <div class="login-help">
+        <small>Acceso por defecto: <strong>admin</strong> / <strong>admin123</strong></small>
+      </div>
+    </div>
+  </div>
+
+  <!-- APLICACIÓN PRINCIPAL -->
+  <div id="app-container" style="display: none; flex-direction: column; min-height: 100vh;">
+
+    <header class="main-header">
+      <div class="logo-container">
+        <img src="../../logo_el_rey.png" alt="El Rey Logo" class="logo" onerror="this.style.display='none'">
+        <div class="header-text">
+          <h1>CONTROL DE DEPARTAMENTO DE SISTEMAS</h1>
+          <p>SISTEMAS | EL REY &bull; Organización &bull; Seguimiento &bull; Resultados</p>
+        </div>
+      </div>
+      <div class="user-status-bar">
+        <button class="btn btn-secondary btn-sm" onclick="returnToMain()">⇦ Selector Principal</button>
+        <span>👤 Usuario: <strong id="current-user-display">-</strong></span>
+        <button class="btn btn-secondary btn-sm" onclick="handleLogout()" title="Cerrar Sesión">Salir ➔</button>
+      </div>
+    </header>
+
+    <div class="app-layout">
+      <aside class="sidebar">
+        <div class="sidebar-title">MENÚ PRINCIPAL</div>
+        <button class="nav-btn active" id="nav-home" onclick="showView('home')">⌂ Inicio</button>
+        <button class="nav-btn" id="nav-activities" onclick="showView('activities')">▤ Actividades</button>
+        <button class="nav-btn" id="nav-compras" onclick="showView('compras')">🛒 Compras Priorizadas</button>
+        <button class="nav-btn" id="nav-inventario" onclick="showView('inventario')">📦 Inventario</button>
+        <button class="nav-btn" id="nav-corte" onclick="showView('corte')">✂ Corte por Fechas</button>
+        <button class="nav-btn" id="nav-report" onclick="showView('report')">▥ Reportes</button>
+
+        <div class="sidebar-footer">
+          <h3>EL REY</h3>
+          <p>Control de Sistemas</p>
+        </div>
+      </aside>
+
+      <main class="content-area">
+        <!-- VISTA: INICIO -->
+        <section id="view-home" class="view-section">
+          <div class="section-header">
+            <h2>¡Hola! Panel General del Área de Sistemas.</h2>
+            <div>
+              <button class="btn btn-primary" onclick="openForm()">+ Nueva actividad</button>
+            </div>
+          </div>
+
+          <div class="metrics-grid">
+            <div class="card-metric border-blue clickable" onclick="filterFromCard('Todos')">
+              <span class="metric-icon">▤</span>
+              <div>
+                <span class="metric-title">Total de actividades</span>
+                <h3 id="m-total">0</h3>
+              </div>
+            </div>
+            <div class="card-metric border-yellow clickable" onclick="filterFromCard('Pendiente')">
+              <span class="metric-icon">◷</span>
+              <div>
+                <span class="metric-title">Pendientes</span>
+                <h3 id="m-pending">0</h3>
+              </div>
+            </div>
+            <div class="card-metric border-cyan clickable" onclick="filterFromCard('En proceso')">
+              <span class="metric-icon">⚙</span>
+              <div>
+                <span class="metric-title">En proceso</span>
+                <h3 id="m-process">0</h3>
+              </div>
+            </div>
+            <div class="card-metric border-green clickable" onclick="filterFromCard('Completada')">
+              <span class="metric-icon">✓</span>
+              <div>
+                <span class="metric-title">Completadas</span>
+                <h3 id="m-done">0</h3>
+              </div>
+            </div>
+            <div class="card-metric border-red clickable" onclick="filterFromCard('Vencidas')">
+              <span class="metric-icon">!</span>
+              <div>
+                <span class="metric-title">Vencidas</span>
+                <h3 id="m-late">0</h3>
+              </div>
+            </div>
+          </div>
+
+          <div class="home-grid">
+            <div class="card-panel">
+              <div class="panel-header">
+                <span>▤ ACTIVIDADES RECIENTES</span>
+                <button class="btn btn-secondary btn-sm" onclick="showView('activities')">Ver todas →</button>
+              </div>
+              <div id="recent-list" class="cards-container"></div>
+            </div>
+
+            <div class="card-panel">
+              <div class="panel-header">⚡ ACCESOS RÁPIDOS Y COMPRAS</div>
+              <div class="quick-actions">
+                <button class="btn btn-green block" onclick="showView('report')">▥ Ver Reportes Ejecutivos</button>
+                <button class="btn btn-secondary block" onclick="exportJSON()">⇩ Exportar Backup</button>
+                <button class="btn btn-orange block" onclick="document.getElementById('import-file').click()">⇧ Importar
+                  Backup</button>
+                <input type="file" id="import-file" style="display:none" accept=".json" onchange="importJSON(event)">
+              </div>
+
+              <h4 class="sub-header">ABIERTAS POR SUCURSAL</h4>
+              <div class="chart-box" style="height: 140px; margin-bottom: 12px;">
+                <canvas id="miniChartBranches"></canvas>
+              </div>
+              <div id="branch-summary"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- SUBMÓDULOS (CARGADOS DINÁMICAMENTE CON SUS PROPIOS MODALES) -->
+        <section id="view-activities" class="view-section" style="display:none;"></section>
+        <section id="view-compras" class="view-section" style="display:none;"></section>
+        <section id="view-inventario" class="view-section" style="display:none;"></section>
+        <section id="view-corte" class="view-section" style="display:none;"></section>
+        <section id="view-report" class="view-section" style="display:none;"></section>
+      </main>
+    </div>
+
+    <footer class="main-footer">
+      <span>● Conectado a Servidor MySQL | DB: elrey_sistemas</span>
+      <span style="color: var(--yellow);">El Rey | Área de Sistemas</span>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+
+</html>
